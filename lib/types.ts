@@ -30,6 +30,39 @@ export interface CategoryData {
     color: string;
 }
 
+export interface Budget {
+    _id?: string;
+    month: string; // Format: "YYYY-MM"
+    category: string;
+    amount: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface BudgetFormData {
+    month: string;
+    category: string;
+    amount: string;
+}
+
+export interface BudgetComparison {
+    category: string;
+    budget: number;
+    actual: number;
+    remaining: number;
+    percentage: number;
+    color: string;
+}
+
+export interface SpendingInsight {
+    type: 'highest' | 'lowest' | 'trend' | 'category';
+    title: string;
+    description: string;
+    value: string;
+    icon: string;
+    color: string;
+}
+
 // Predefined categories
 export const EXPENSE_CATEGORIES = [
     'Food & Dining',

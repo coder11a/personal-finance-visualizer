@@ -5,9 +5,12 @@ import { TransactionList } from '@/components/TransactionList';
 import { MonthlyChart } from '@/components/MonthlyChart';
 import { CategoryPieChart } from '@/components/CategoryPieChart';
 import { RecentTransactions } from '@/components/RecentTransactions';
+import { BudgetManager } from '@/components/BudgetManager';
+import { BudgetComparisonChart } from '@/components/BudgetComparisonChart';
+import { SpendingInsights } from '@/components/SpendingInsights';
 import { SummaryCardsSkeleton } from '@/components/SummaryCardsSkeleton';
 import { TransactionListSkeleton } from '@/components/TransactionListSkeleton';
-import { Transaction, MonthlyData, CategoryData } from '@/lib/types';
+import { Transaction, MonthlyData, CategoryData, BudgetComparison, SpendingInsight } from '@/lib/types';
 import { Toaster } from 'sonner';
 
 export default function Home() {
@@ -15,9 +18,14 @@ export default function Home() {
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<CategoryData[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<CategoryData[]>([]);
+  const [budgetComparison, setBudgetComparison] = useState<BudgetComparison[]>([]);
+  const [spendingInsights, setSpendingInsights] = useState<SpendingInsight[]>([]);
+  const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingChart, setIsLoadingChart] = useState(true);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isLoadingBudgets, setIsLoadingBudgets] = useState(true);
+  const [isLoadingInsights, setIsLoadingInsights] = useState(true);
 
   const fetchTransactions = async () => {
     try {
@@ -72,16 +80,53 @@ export default function Home() {
     }
   };
 
+  const fetchBudgetData = async () => {
+    try {
+      const response = await fetch(`/api/budgets/comparison?month=${currentMonth}`);
+      if (response.ok) {
+        const data = await response.json();
+        setBudgetComparison(data);
+      }
+    } catch (error) {
+      console.error('Error fetching budget data:', error);
+    } finally {
+      setIsLoadingBudgets(false);
+    }
+  };
+
+  const fetchInsightsData = async () => {
+    try {
+      const response = await fetch(`/api/insights?month=${currentMonth}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSpendingInsights(data);
+      }
+    } catch (error) {
+      console.error('Error fetching insights data:', error);
+    } finally {
+      setIsLoadingInsights(false);
+    }
+  };
+
   useEffect(() => {
     fetchTransactions();
     fetchMonthlyData();
     fetchCategoryData();
-  }, []);
+    fetchBudgetData();
+    fetchInsightsData();
+  }, [currentMonth]);
 
   const handleTransactionUpdate = () => {
     fetchTransactions();
     fetchMonthlyData();
     fetchCategoryData();
+    fetchBudgetData();
+    fetchInsightsData();
+  };
+
+  const handleBudgetUpdate = () => {
+    fetchBudgetData();
+    fetchInsightsData();
   };
 
   const totalIncome = transactions
@@ -167,6 +212,53 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* Month Selector */}
+        <div className="mb-8">
+          <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-slate-700 dark:text-slate-300">Dashboard</h2>
+              <div className="flex items-center space-x-4">
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                  Select Month:
+                </label>
+                <input
+                  type="month"
+                  value={currentMonth}
+                  onChange={(e) => setCurrentMonth(e.target.value)}
+                  className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Spending Insights */}
+        <div className="mb-12">
+          <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl p-6">
+            <SpendingInsights
+              insights={spendingInsights}
+              isLoading={isLoadingInsights}
+            />
+          </div>
+        </div>
+
+        {/* Budget Management and Comparison */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl p-6">
+            <BudgetManager
+              month={currentMonth}
+              onBudgetUpdate={handleBudgetUpdate}
+            />
+          </div>
+          <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl p-6">
+            <BudgetComparisonChart
+              data={budgetComparison}
+              isLoading={isLoadingBudgets}
+              month={currentMonth}
+            />
+          </div>
+        </div>
 
         {/* Category Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
