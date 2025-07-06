@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
 
 export async function DELETE(
     request: NextRequest,
@@ -13,7 +12,10 @@ export async function DELETE(
         const db = client.db('finance-tracker');
         const collection = db.collection('budgets');
 
-        const result = await collection.deleteOne({ _id: new ObjectId(id) });
+        // Convert string ID to ObjectId for MongoDB
+        const { ObjectId } = await import('mongodb');
+        const objectId = new ObjectId(id);
+        const result = await collection.deleteOne({ _id: objectId });
 
         if (result.deletedCount === 0) {
             return NextResponse.json(
