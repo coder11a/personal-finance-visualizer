@@ -58,9 +58,6 @@ export function CategoryPieChart({ data, isLoading, title, type }: CategoryPieCh
                         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                             {data.map((item, index) => {
                                 const percentage = item.percentage;
-                                const circumference = 2 * Math.PI * 45; // radius = 45
-                                const strokeDasharray = (percentage / 100) * circumference;
-                                const strokeDashoffset = 0;
 
                                 // Calculate the start angle for each segment
                                 let startAngle = 0;
@@ -111,8 +108,8 @@ export function CategoryPieChart({ data, isLoading, title, type }: CategoryPieCh
                                 <div
                                     key={item.category}
                                     className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all duration-200 ${selectedCategory === item.category
-                                            ? 'bg-slate-100 dark:bg-slate-700'
-                                            : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+                                        ? 'bg-slate-100 dark:bg-slate-700'
+                                        : 'hover:bg-slate-50 dark:hover:bg-slate-800'
                                         }`}
                                     onClick={() => setSelectedCategory(selectedCategory === item.category ? null : item.category)}
                                 >
